@@ -1,0 +1,17 @@
+T-Mobile's servers were hacked into in August 2021 and personal information was stolen
+for approximately 100 million T-Mobile customers. The stolen data included IMSI (International Mobile
+Subscriber Identity), IMEI (International Mobile Equipment Identity), phone number, customer name, security
+PIN, SSN, driver license number, and date-of-birth.
+
+The hackers were able to obtain SSH access to production servers and obtain access to the Oracle database.
+
+"The breach was done to retaliate against the US for the kidnapping and torture of John Erin Binns (CIA
+Raven-1) in Germany by CIA and Turkish intelligence agents in 2019," the hacker allegedly told Alon Gal,
+the co-founder of cybercrime intelligence firm Hudson Rock.
+
+The hackers did not try to ransom the data to T-Mobile because they had ready buyers for the stolen data.
+
+"We are aware of claims made in an underground forum and have been actively investigating their validity.
+We do not have any additional information to share at this time," T-Mobile told BleepingComputer.
+
+It is unclear what changes T-Mobile has made to address the issue.
