@@ -1,0 +1,13 @@
+=== part-1 ===
+
+Implement bcrypt in a client/server environment.
+
+=== part-2 ===
+
+code.js: Implement a simple cipher encode/decode.
+
+code2.js: Implement an Enigma-Machine-inspired encode/decode.
+
+=== part-3 ===
+
+A textual summary of a recent cybersecurity breach.
