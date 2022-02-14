@@ -3,7 +3,7 @@ This file includes code to encrypt and decrypt a string using a scheme inspired 
 
 It can encode and decode any string that's composed of printable ASCII characters (codes 32 through 126).
 
-The first character is endocded based on the length of the string to encode. Subsequent characters are encoded based on the history of the encoding and the character to be encoded.
+The first character is encoded based on the length of the string to encode. Subsequent characters are encoded based on the history of the encoding and the character to be encoded.
 
 The plugboard is used to provide a simple cipher that's applied before the "rotors" during encoding and after the "rotors" during decoding. The plugboard provides two-way substitution:
 
@@ -18,7 +18,7 @@ implies
 or,
 'a' -> 'x' and 'x' -> 'a',
 'b' -> 'y' and 'y' -> 'b', and
-'c' -> 'z' and 'z' -> 'c',
+'c' -> 'z' and 'z' -> 'c'.
 */
 
 let shouldEncode = true
@@ -26,8 +26,7 @@ let baseShift = 0
 let shift = 0
 let shouldAdd = true
 
-let plugboardA = ''
-let plugboardB = ''
+let plugboard = []
 let usePlugboard = false
 
 function setScheme(str, mode, plugA, plugB) {
@@ -44,13 +43,19 @@ function setScheme(str, mode, plugA, plugB) {
         shouldAdd = !shouldEncode
     }
 
-    if (plugA && plugB && plugA.length > 0 && plugA.length === plugB.length) {
-        plugboardA = plugA
-        plugboardB = plugB
+    plugboard = []
+    if (plugA && plugB && plugA.length > 0 && plugB.length > 0) {
+        // set up a single plugboard to allow a one-way lookup
+        // don't use a single-sided plug
+        const length = Math.min(plugA.length, plugB.length)
+        for (let i = 0; i < length; i++) {
+            plugboard[plugA[i]] = plugB[i]
+        }
+        for (let i = 0; i < length; i++) {
+            plugboard[plugB[i]] = plugA[i]
+        }
         usePlugboard = true
     } else {
-        plugboardA = ''
-        plugboardB = ''
         usePlugboard = false
     }
 
@@ -60,13 +65,9 @@ function setScheme(str, mode, plugA, plugB) {
 }
 
 function charFromPlugboard(char) {
-    let index = plugboardA.indexOf(char)
-    if (index > -1) {
-        return plugboardB[index]
-    }
-    index = plugboardB.indexOf(char)
-    if (index > -1) {
-        return plugboardA[index]
+    const plugboardChar = plugboard[char]
+    if (plugboardChar) {
+        return String(plugboardChar)
     }
     return char
 }
@@ -85,15 +86,19 @@ function charFromPlugboardPost(char) {
     return char
 }
 
-// plugboardA = 'abc'
-// plugboardB = 'xyz'
+// plugA = 'abc'
+// plugB = 'xyz'
 
 // function testCharFromPlugboardPre(inp, exp) {
 //     const res = charFromPlugboardPre(inp)
 //     console.log("testCharToEncode passed:", res === exp, "  inp:", inp, "  res:", res, "  exp:", exp)
 // }
 
+// setScheme('', 'encode', plugA, plugB)
+// console.log("    plugA:", plugA, "  plugB:", plugB)
+// console.log("plugboard:", plugboard)
 // testCharFromPlugboardPre('a','x')
+// testCharFromPlugboardPre('x','a')
 // testCharFromPlugboardPre('m','m')
 
 // function testCharFromPlugboardPost(inp, exp) {
@@ -102,6 +107,10 @@ function charFromPlugboardPost(char) {
 //     console.log("testCharAfterDecode passed:", res === exp, "  inp:", inp, "  res:", res, "  exp:", exp)
 // }
 
+// setScheme('', 'decode', plugA, plugB)
+// console.log("    plugA:", plugA, "  plugB:", plugB)
+// console.log("plugboard:", plugboard)
+// testCharFromPlugboardPost('a','x')
 // testCharFromPlugboardPost('x','a')
 // testCharFromPlugboardPost('m','m')
 
