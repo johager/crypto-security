@@ -182,22 +182,23 @@ function reverse(str) {
 function converted(str, mode, plugA, plugB) {
     setScheme(str, mode, plugA, plugB)
 
-    let mod4 = 0
+    let mod4 = 0  // this controls the order that the characters are converted
 
-    if (str.length < 3) {
-        switch (str.length) {
-            case 0:
-                return str
-            case 1:
-                const index = 0
-                // console.log('index:', index)
-                return charFor(str, index)
-            case 2:
-                // do reverse
-                mod4 = 1
-        }
-    } else {
-        mod4 = str.length % 4
+    switch (str.length) {
+        case 0:
+            return str
+        case 1:
+            // console.log('1: convert the single character')
+            const index = 0
+            // console.log('index:', index)
+            return charFor(str, index)
+        case 2:
+            // do reverse
+            // console.log('2: do mod4 = 1: first odd, reverse')
+            mod4 = 1
+            break
+        default:
+            mod4 = str.length % 4
     }
 
     let outputF = ''
@@ -368,24 +369,34 @@ test('The quick brown fox jumps over the lazy dog.','lmnstu','abcxyz')
 
 // function mode(str) {
 //     console.log(`=== ${str} ===`)
+//     const onlyShowScheme = true
 //     let mod4 = 0
-//     if (str.length > 2) {
-//         mod4 = str.length % 4
-//     } else {
-//         switch (str.length) {
-//             case 1:
-//                 console.log('1:', 1%4)
-//                 const index = 0
-//                 console.log('index:', index)
+
+//     switch (str.length) {
+//         case 0:
+//             return str
+//         case 1:
+//             console.log('1: convert the single character')
+//             if (onlyShowScheme) {
 //                 return
-//             case 2:
-//                 mod4 = 1
-//         }
+//             }
+//             const index = 0
+//             // console.log('index:', index)
+//         case 2:
+//             // do reverse
+//             console.log('2: do mod4 = 1: first odd, reverse')
+//             mod4 = 1
+//             break
+//         default:
+//             mod4 = str.length % 4
 //     }
-// 
+
 //     switch (mod4) {
 //         case 0:
 //             console.log('mod 0: first even, forward from center, reverse from center')
+//             if (onlyShowScheme) {
+//                 return
+//             }
 //             for (let index = (str.length) / 2; index < str.length; index++) {
 //                 console.log('index:', index)
 //             }
@@ -395,12 +406,18 @@ test('The quick brown fox jumps over the lazy dog.','lmnstu','abcxyz')
 //             break
 //         case 1:
 //             console.log('mod 1: first odd, reverse')
+//             if (onlyShowScheme) {
+//                 return
+//             }
 //             for (let index = str.length - 1; index > -1; index--) {
 //                 console.log('index:', index)
 //             }
 //             break
 //         case 2:
 //             console.log('mod 2: second even, reverse from center, forward from center')
+//             if (onlyShowScheme) {
+//                 return
+//             }
 //             for (let index = (str.length) / 2 - 1; index > -1; index--) {
 //                 console.log('index:', index)
 //             }
@@ -410,6 +427,9 @@ test('The quick brown fox jumps over the lazy dog.','lmnstu','abcxyz')
 //             break
 //         case 3:
 //             console.log('mod 3: second odd, forward')
+//             if (onlyShowScheme) {
+//                 return
+//             }
 //             for (let index in str) {
 //                 console.log('index:', +index)
 //             }
