@@ -3,7 +3,9 @@ This file includes code to encrypt and decrypt a string using a scheme inspired 
 
 It can encode and decode any string that's composed of printable ASCII characters (codes 32 through 126).
 
-The first character is encoded based on the length of the string to encode. Subsequent characters are encoded based on the history of the encoding and the character to be encoded.
+The order that characters are encoded is based on the length of the string to encode.
+
+The first character that's encoded always has the same encoding, and subsequent characters are encoded based on the history of the encoding and the character to be encoded.
 
 The plugboard is used to provide a simple cipher that's applied before the "rotors" during encoding and after the "rotors" during decoding. The plugboard provides two-way substitution:
 
@@ -29,9 +31,12 @@ let shouldAdd = true
 let plugboard = []
 let usePlugboard = false
 
+let count = 1
+
 function setScheme(str, mode, plugA, plugB) {
     shouldEncode = mode === 'encode'
     const shift0 = str.length % 7
+    count = 1
     
     if (str.length % 2) {
         baseShift = shift0 + 5
@@ -114,13 +119,14 @@ function charFromPlugboardPost(char) {
 // testCharFromPlugboardPost('x','a')
 // testCharFromPlugboardPost('m','m')
 
-function codeFor(codeIn, index) {
+function codeFor(codeIn) {
     let code = codeIn - 32  // shift to a zero-based reference of available ASCII codes
 
-    if (index > 0 && index % baseShift === 0) {
+    if (count % baseShift === 0) {
         shift = baseShift
+        // shouldAdd = !shouldAdd
     } else {
-        shift += 11
+        shift += 3
         shouldAdd = !shouldAdd
     }
 
@@ -147,21 +153,104 @@ function codeFor(codeIn, index) {
     return code + 32  // return to ASCII code
 }
 
+function charFor(str, index) {
+    const charPre = charFromPlugboardPre(str[index])
+    const codeIn = charPre.charCodeAt(0)  // get ASCII code
+    const codeOut = codeFor(codeIn)
+    const charOut = String.fromCharCode(codeOut)  // get character from ASCII code
+    const charPost = charFromPlugboardPost(charOut)
+    // console.log("char:", str[index], "  codeIn:", codeIn, "  codeOut:", codeOut, "  charOut:", charOut)
+    // console.log("char:", str[index], "  charPre:", charPre, "  codeIn:", codeIn, "  codeOut:", codeOut, "  charOut:", charOut, "  charPost:", charPost)
+    return charPost
+}
+
+// function converted(str, mode, plugA, plugB) {
+//     setScheme(str, mode, plugA, plugB)
+
+//     let output = ''
+//     for (let index in str) {
+//         output += charFor(str, +index)
+//         count++
+//     }
+//     return output
+// }
+
+function reverse(str) {
+    return str.split('').reverse().join('')
+}
+
 function converted(str, mode, plugA, plugB) {
     setScheme(str, mode, plugA, plugB)
 
-    let output = ''
-    for (let index in str) {
-        const charPre = charFromPlugboardPre(str[index])
-        const codeIn = charPre.charCodeAt(0)  // get ASCII code
-        const codeOut = codeFor(codeIn, index)
-        const charOut = String.fromCharCode(codeOut)  // get character from ASCII code
-        const charPost = charFromPlugboardPost(charOut)
-        // console.log("char:", str[index], "  codeIn:", codeIn, "  codeOut:", codeOut, "  charOut:", charOut)
-        // console.log("char:", str[index], "  charPre:", charPre, "  codeIn:", codeIn, "  codeOut:", codeOut, "  charOut:", charOut, "  charPost:", charPost)
-        output += charPost
+    let mod4 = 0
+
+    if (str.length < 3) {
+        switch (str.length) {
+            case 0:
+                return str
+            case 1:
+                const index = 0
+                // console.log('index:', index)
+                return charFor(str, index)
+            case 2:
+                // do reverse
+                mod4 = 1
+        }
+    } else {
+        mod4 = str.length % 4
     }
-    return output
+
+    let outputF = ''
+    let outputR = ''
+
+    switch (mod4) {
+        case 0:
+            // first even: forward from center, reverse from center
+            // console.log('mod 0: first even: forward from center, reverse from center')
+            for (let index = (str.length) / 2; index < str.length; index++) {
+                // console.log('index:', index)
+                outputF += charFor(str, index)
+                count++
+            }
+            for (let index = (str.length) / 2 - 1; index > -1; index--) {
+                // console.log('index:', index)
+                outputR += charFor(str, index)
+                count++
+            }
+            return reverse(outputR) + outputF
+        case 1:
+            // first odd: reverse
+            // console.log('mod 1: first odd: reverse')
+            for (let index = str.length - 1; index > -1; index--) {
+                // console.log('index:', index)
+                outputR += charFor(str, index)
+                count++
+            }
+            return reverse(outputR)
+        case 2:
+            // second even: reverse from center, forward from center
+            // console.log('mod 2: second even: reverse from center, forward from center')
+            for (let index = (str.length) / 2 - 1; index > -1; index--) {
+                // console.log('index:', index)
+                outputR += charFor(str, index)
+                count++
+            }
+            for (let index = (str.length) / 2; index < str.length; index++) {
+                // console.log('index:', index)
+                outputF += charFor(str, index)
+                count++
+            }
+            return reverse(outputR) + outputF
+        case 3:
+            // second odd: forward
+            // console.log('mod 3: second odd: forward')
+            for (let index in str) {
+                // console.log('index:', +index)
+                outputF += charFor(str, +index)
+                count++
+            }
+            return outputF
+    }
 }
 
 function encoded(str, plugA, plugB) {
@@ -276,3 +365,63 @@ test('The quick brown fox jumps over the lazy dog.','lmnstu','abcxyz')
 // test('Someone must have slandered Josef K., for one morning, without having done anything truly wrong, he was arrested.','abcijk','xyzlmn')
 // test('It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.','abcijk','xyzlmn')
 // console.log("==================")
+
+// function mode(str) {
+//     console.log(`=== ${str} ===`)
+//     let mod4 = 0
+//     if (str.length > 2) {
+//         mod4 = str.length % 4
+//     } else {
+//         switch (str.length) {
+//             case 1:
+//                 console.log('1:', 1%4)
+//                 const index = 0
+//                 console.log('index:', index)
+//                 return
+//             case 2:
+//                 mod4 = 1
+//         }
+//     }
+// 
+//     switch (mod4) {
+//         case 0:
+//             console.log('mod 0: first even, forward from center, reverse from center')
+//             for (let index = (str.length) / 2; index < str.length; index++) {
+//                 console.log('index:', index)
+//             }
+//             for (let index = (str.length) / 2 - 1; index > -1; index--) {
+//                 console.log('index:', index)
+//             }
+//             break
+//         case 1:
+//             console.log('mod 1: first odd, reverse')
+//             for (let index = str.length - 1; index > -1; index--) {
+//                 console.log('index:', index)
+//             }
+//             break
+//         case 2:
+//             console.log('mod 2: second even, reverse from center, forward from center')
+//             for (let index = (str.length) / 2 - 1; index > -1; index--) {
+//                 console.log('index:', index)
+//             }
+//             for (let index = (str.length) / 2; index < str.length; index++) {
+//                 console.log('index:', index)
+//             }
+//             break
+//         case 3:
+//             console.log('mod 3: second odd, forward')
+//             for (let index in str) {
+//                 console.log('index:', +index)
+//             }
+//             break
+//     }
+// }
+
+// mode('0')
+// mode('01')
+// mode('012')
+// mode('0123')
+// mode('01234')
+// mode('012345')
+// mode('0123456')
+// mode('01234567')
